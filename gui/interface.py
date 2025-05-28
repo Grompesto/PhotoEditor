@@ -38,7 +38,7 @@ canvas.grid(row=0,column=1)
 current_image = None
 tk_image = None
 
-# function for load image through menubar->file->open...
+# function to load image through menubar->file->open...
 def image_open():
     global current_image, tk_image
     fileTypes = [('Image Files','*.png;*.jpg;*.jpeg')]
@@ -48,11 +48,11 @@ def image_open():
     canvas.delete("all")
     canvas.create_image(0, 0, anchor=NW, image=tk_image)
 
-# function for save image through menubar->file->save as...
+# function to save image through menubar->file->save as...
 def image_save_as():
     fileTypes = [('Image Files', '*.png;*.jpg;*.jpeg')]
-    path = filedialog.asksaveasfile(filetypes=fileTypes)
-
+    path = filedialog.asksaveasfilename(filetypes=fileTypes)
+    current_image.save(path)
 
 # function for blank file through menubar->file->new file
 def new_file():
@@ -86,7 +86,7 @@ rightClick.add_command(label = 'Cut')
 rightClick.add_command(label='Copy')
 rightClick.add_command(label='Paste')
 
-# add popup menu when right clicked
+# add popup menu when right-clicked
 def right_popup(event):
     rightClick.tk_popup(event.x_root, event.y_root)
 
