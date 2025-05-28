@@ -1,36 +1,76 @@
 from tkinter import *
 from tkinter import filedialog
 from PIL import ImageTk, Image
+from editor.tools import DrawTools
+
 
 #create main window
 window = Tk()
 window.title("PRB (Photoshop's retarded brother)")
 window.geometry('1280x720')
 window.resizable(width=False,height=False)
+icon = PhotoImage(file ='C:/Users/zlaya/PycharmProjects/PythonProject/assets/Retarded brother.png')
+window.iconphoto(True,icon)
 
 # icon for text tool
 imagetext = Image.open("C:/Users/zlaya/PycharmProjects/PythonProject/assets/free-icon-text-2266755.png").resize((25,25))
 image_text = ImageTk.PhotoImage(imagetext)
 
+#create main left frame for smaller frames
+left_frame = Frame(window, bg="darkgray")
+left_frame.grid(row=0, column=0, rowspan=2, sticky="ns")
 
 # create frame with tools
-tool_bar = Frame(window, bg = 'gray',borderwidth=10)
+tool_bar = Frame(left_frame, bg = 'gray',borderwidth=10)
+tool_bar.pack(side=TOP)
 
-tool_text = Button(tool_bar,image=image_text).pack()
-tool_line = Button(tool_bar,text='/').pack()
-tool_selection = Button(tool_bar,text='H').pack()
-tool_lupa = Button(tool_bar,text='O').pack()
-tool_slice = Button(tool_bar,text='S').pack()
-tool_brash = Button(tool_bar,text='B').pack()
-tool_move = Button(tool_bar,text='M').pack()
-tool_erasor = Button(tool_bar,text='E').pack()
-tool_marquee = Button(tool_bar,text='Q').pack()
-tool_eyedropper = Button(tool_bar,text='Y').pack()
-tool_gradient = Button(tool_bar,text='G').pack()
-tool_blur = Button(tool_bar,text='U').pack()
-tool_rotate = Button(tool_bar,text='R').pack()
-tool_hand = Button(tool_bar,text='D').pack()
-tool_bar.grid(row=0,column=0)
+tool_text = Button(tool_bar,image=image_text)
+tool_text.pack()
+tool_line = Button(tool_bar,text='/')
+tool_line.pack()
+tool_selection = Button(tool_bar,text='H')
+tool_selection.pack()
+tool_lupa = Button(tool_bar,text='O')
+tool_lupa.pack()
+tool_slice = Button(tool_bar,text='S')
+tool_slice.pack()
+tool_brash = Button(tool_bar,text='B')
+tool_brash.pack()
+tool_move = Button(tool_bar,text='M')
+tool_move.pack()
+tool_erasor = Button(tool_bar,text='E')
+tool_erasor.pack()
+tool_marquee = Button(tool_bar,text='Q')
+tool_marquee.pack()
+tool_eyedropper = Button(tool_bar,text='Y')
+tool_eyedropper.pack()
+tool_gradient = Button(tool_bar,text='G')
+tool_gradient.pack()
+tool_blur = Button(tool_bar,text='U')
+tool_blur.pack()
+tool_rotate = Button(tool_bar,text='R')
+tool_rotate.pack()
+tool_hand = Button(tool_bar,text='D')
+tool_hand.pack()
+
+#create color palette frame
+colorpalette_bar = Frame(left_frame,bg='gray',borderwidth=10)
+colorpalette_bar.pack(side=BOTTOM)
+
+color_green = Button(colorpalette_bar, bg='green')
+color_green.pack()
+color_blue = Button(colorpalette_bar, bg='blue')
+color_blue.pack()
+color_red = Button(colorpalette_bar, bg='red')
+color_red.pack()
+color_yellow = Button(colorpalette_bar, bg='yellow')
+color_yellow.pack()
+color_purple = Button(colorpalette_bar, bg='purple')
+color_purple.pack()
+color_black = Button(colorpalette_bar, bg='black')
+color_black.pack()
+color_orange = Button(colorpalette_bar, bg='orange')
+color_orange.pack()
 
 # area for image
 canvas = Canvas(window, width=1280, height=720, bg = 'lightgray')
@@ -58,6 +98,17 @@ def image_save_as():
 def new_file():
     canvas.delete("all")
 
+def undo_move():
+    None
+
+def stepf():
+    None
+
+def stepb():
+    None
+
+
+
 # create menu bar
 menubar = Menu(window)
 file = Menu(menubar,tearoff=0)
@@ -74,9 +125,9 @@ file.add_command(label='Save as...', command=image_save_as)
 file.add_separator()
 file.add_command(label='Exit', command=window.quit)
 
-edit.add_command(label='Undo move')
-edit.add_command(label='Step Forward')
-edit.add_command(label='Step Backward')
+edit.add_command(label='Undo move',command=undo_move)
+edit.add_command(label='Step Forward', command=stepf)
+edit.add_command(label='Step Backward',command=stepb)
 edit.add_separator()
 edit.add_command(label='Cut')
 edit.add_command(label='Copy')
@@ -90,6 +141,10 @@ rightClick.add_command(label='Paste')
 def right_popup(event):
     rightClick.tk_popup(event.x_root, event.y_root)
 
+#brush = DrawTools(canvas)
+#circle = DrawTools(canvas)
+#canvas.bind('<B1-Motion>', brush.draw_line)
+#canvas.bind('<Button-1>', circle.draw_oval)
 
 window.bind('<Button-3>',right_popup)
 
