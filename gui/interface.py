@@ -57,19 +57,19 @@ tool_hand.pack()
 colorpalette_bar = Frame(left_frame,bg='gray',borderwidth=10)
 colorpalette_bar.pack(side=BOTTOM)
 
-color_green = Button(colorpalette_bar, bg='green')
+color_green = Button(colorpalette_bar, bg='green',command=lambda: select_colour('green'))
 color_green.pack()
-color_blue = Button(colorpalette_bar, bg='blue')
+color_blue = Button(colorpalette_bar, bg='blue',command=lambda: select_colour('blue'))
 color_blue.pack()
-color_red = Button(colorpalette_bar, bg='red')
+color_red = Button(colorpalette_bar, bg='red',command=lambda: select_colour('red'))
 color_red.pack()
-color_yellow = Button(colorpalette_bar, bg='yellow')
+color_yellow = Button(colorpalette_bar, bg='yellow',command=lambda: select_colour('yellow'))
 color_yellow.pack()
-color_purple = Button(colorpalette_bar, bg='purple')
+color_purple = Button(colorpalette_bar, bg='purple',command=lambda: select_colour('purple'))
 color_purple.pack()
-color_black = Button(colorpalette_bar, bg='black')
+color_black = Button(colorpalette_bar, bg='black',command=lambda: select_colour('black'))
 color_black.pack()
-color_orange = Button(colorpalette_bar, bg='orange')
+color_orange = Button(colorpalette_bar, bg='orange',command=lambda: select_colour('orange'))
 color_orange.pack()
 
 # area for image
@@ -107,26 +107,32 @@ def stepf():
 def stepb():
     None
 
+#allows to select colour
+colour = 'black'
+def select_colour(new_colour):
+    global colour
+    colour = new_colour
+    current_tool.set_colour(colour)
+
 #allows to select tools
 current_tool = None
 active_button = None
 def deselect_tool():
     global active_button
-    if active_button:
-        canvas.unbind(active_button)
-        active_button = None
+    canvas.unbind(active_button)
+    active_button = None
 
 def select_brush():
     global current_tool, active_button
     deselect_tool()
-    current_tool = DrawTools(canvas)
+    current_tool = DrawTools(canvas, colour)
     canvas.bind('<B1-Motion>', current_tool.draw_line)
     active_button = '<B1-Motion>'
 
 def select_oval():
     global current_tool, active_button
     deselect_tool()
-    current_tool = DrawTools(canvas)
+    current_tool = DrawTools(canvas, colour)
     canvas.bind('<Button-1>', current_tool.draw_oval)
     active_button = '<Button-1>'
 
