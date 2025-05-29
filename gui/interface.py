@@ -34,8 +34,8 @@ tool_lupa = Button(tool_bar,text='O')
 tool_lupa.pack()
 tool_slice = Button(tool_bar,text='S')
 tool_slice.pack()
-tool_brash = Button(tool_bar,text='B')
-tool_brash.pack()
+tool_brush = Button(tool_bar,text='B')
+tool_brush.pack()
 tool_move = Button(tool_bar,text='M')
 tool_move.pack()
 tool_erasor = Button(tool_bar,text='E')
@@ -107,7 +107,28 @@ def stepf():
 def stepb():
     None
 
+#allows to select tools
+current_tool = None
+active_button = None
+def deselect_tool():
+    global active_button
+    if active_button:
+        canvas.unbind(active_button)
+        active_button = None
 
+def select_brush():
+    global current_tool, active_button
+    deselect_tool()
+    current_tool = DrawTools(canvas)
+    canvas.bind('<B1-Motion>', current_tool.draw_line)
+    active_button = '<B1-Motion>'
+
+def select_oval():
+    global current_tool, active_button
+    deselect_tool()
+    current_tool = DrawTools(canvas)
+    canvas.bind('<Button-1>', current_tool.draw_oval)
+    active_button = '<Button-1>'
 
 # create menu bar
 menubar = Menu(window)
@@ -141,11 +162,8 @@ rightClick.add_command(label='Paste')
 def right_popup(event):
     rightClick.tk_popup(event.x_root, event.y_root)
 
-#brush = DrawTools(canvas)
-#circle = DrawTools(canvas)
-#canvas.bind('<B1-Motion>', brush.draw_line)
-#canvas.bind('<Button-1>', circle.draw_oval)
-
+tool_line.config(command=select_oval)
+tool_brush.config(command=select_brush)
 window.bind('<Button-3>',right_popup)
 
 window.config(menu = menubar)
