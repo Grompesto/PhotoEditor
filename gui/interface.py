@@ -78,6 +78,10 @@ canvas.grid(row=0,column=1)
 current_image = None
 tk_image = None
 
+#lists for history of changes of image
+history = []
+redo_history = []
+
 #create frame for scale grid
 right_frame = Frame(window, bg="darkgray", borderwidth=10)
 right_frame.grid(row=0, column=2, rowspan=2, sticky="ns")
@@ -115,11 +119,25 @@ def new_file():
 def undo_move():
     pass
 
+#function to make step forward
 def stepf():
-    pass
+    global current_image, tk_image, history, redo_history
+    if redo_history:
+        history.append(current_image.copy())
+        current_image = redo_history.pop()
+        tk_image = ImageTk.PhotoImage(current_image)
+        canvas.delete("all")
+        canvas.create_image(0, 0, anchor=NW, image=tk_image)
 
+#function to make step backward
 def stepb():
-    pass
+    global current_image, tk_image, history, redo_history
+    if history:
+        redo_history.append(current_image.copy())
+        current_image = history.pop()
+        tk_image = ImageTk.PhotoImage(current_image)
+        canvas.delete("all")
+        canvas.create_image(0, 0, anchor=NW, image=tk_image)
 
 #allows to select colour
 colour = 'black'
@@ -131,6 +149,8 @@ def select_colour(new_colour):
 #allows to select tools
 current_tool = None
 active_button = None
+
+#function to deselect tool
 def deselect_tool():
     global active_button
     canvas.unbind(active_button)
@@ -151,8 +171,10 @@ def select_oval():
     active_button = '<Button-1>'
 
 def apply_blur():
-    global current_image, tk_image
+    global current_image, tk_image, history, redo_history
     if current_image:
+        history.append(current_image.copy())
+        redo_history.clear()
         radius = blur_scale.get()
         blur_tool = BlurTool(current_image, radius)
         current_image = blur_tool.use_tool()
@@ -161,8 +183,10 @@ def apply_blur():
         canvas.create_image(0, 0, anchor=NW, image=tk_image)
 
 def apply_contrast():
-    global current_image, tk_image
+    global current_image, tk_image, history, redo_history
     if current_image:
+        history.append(current_image.copy())
+        redo_history.clear()
         factor = contrast_scale.get()
         contrast_tool = ContrastTool(current_image, factor)
         current_image = contrast_tool.use_tool()
@@ -201,6 +225,7 @@ rightClick.add_command(label='Paste')
 # add popup menu when right-clicked
 def right_popup(event):
     rightClick.tk_popup(event.x_root, event.y_root)
+
 tool_blur.config(command=apply_blur)
 tool_contrast.config(command=apply_contrast)
 tool_oval.config(command=select_oval)
