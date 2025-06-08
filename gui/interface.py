@@ -1,14 +1,14 @@
 from tkinter import *
 from tkinter import filedialog
 from PIL import ImageTk, Image
-from editor.tools import DrawTools
-
+from editor.tools import DrawTools, OvalTool, BrushTool, PillowTools, BlurTool, ContrastTool
+from tkinter import Scale, HORIZONTAL
 
 #create main window
 window = Tk()
 window.title("PRB (Photoshop's retarded brother)")
 window.geometry('1280x720')
-window.resizable(width=False,height=False)
+window.resizable(width=True,height=True)
 icon = PhotoImage(file ='C:/Users/zlaya/PycharmProjects/PythonProject/assets/Retarded brother.png')
 window.iconphoto(True,icon)
 
@@ -24,33 +24,33 @@ left_frame.grid(row=0, column=0, rowspan=2, sticky="ns")
 tool_bar = Frame(left_frame, bg = 'gray',borderwidth=10)
 tool_bar.pack(side=TOP)
 
-tool_text = Button(tool_bar,image=image_text)
+tool_text = Button(tool_bar,text='Text')
 tool_text.pack()
-tool_line = Button(tool_bar,text='/')
-tool_line.pack()
-tool_selection = Button(tool_bar,text='H')
+tool_oval = Button(tool_bar,text='Oval')
+tool_oval.pack()
+tool_selection = Button(tool_bar,text='Selection')
 tool_selection.pack()
-tool_lupa = Button(tool_bar,text='O')
+tool_lupa = Button(tool_bar,text='Lupa')
 tool_lupa.pack()
-tool_slice = Button(tool_bar,text='S')
+tool_slice = Button(tool_bar,text='Slice')
 tool_slice.pack()
-tool_brush = Button(tool_bar,text='B')
+tool_brush = Button(tool_bar,text='Brush')
 tool_brush.pack()
-tool_move = Button(tool_bar,text='M')
+tool_move = Button(tool_bar,text='Move')
 tool_move.pack()
-tool_erasor = Button(tool_bar,text='E')
+tool_erasor = Button(tool_bar,text='Erasor')
 tool_erasor.pack()
-tool_marquee = Button(tool_bar,text='Q')
+tool_marquee = Button(tool_bar,text='Marquee')
 tool_marquee.pack()
-tool_eyedropper = Button(tool_bar,text='Y')
-tool_eyedropper.pack()
-tool_gradient = Button(tool_bar,text='G')
+tool_gradient = Button(tool_bar,text='Gradient')
 tool_gradient.pack()
-tool_blur = Button(tool_bar,text='U')
+tool_contrast = Button(tool_bar,text='Contrast')
+tool_contrast.pack()
+tool_blur = Button(tool_bar,text='Blur')
 tool_blur.pack()
-tool_rotate = Button(tool_bar,text='R')
+tool_rotate = Button(tool_bar,text='Rotate')
 tool_rotate.pack()
-tool_hand = Button(tool_bar,text='D')
+tool_hand = Button(tool_bar,text='Hand')
 tool_hand.pack()
 
 #create color palette frame
@@ -78,6 +78,20 @@ canvas.grid(row=0,column=1)
 current_image = None
 tk_image = None
 
+#create frame for scale grid
+right_frame = Frame(window, bg="darkgray", borderwidth=10)
+right_frame.grid(row=0, column=2, rowspan=2, sticky="ns")
+
+#scale for blur
+blur_scale = Scale(right_frame, from_=0, to=20, orient=HORIZONTAL, label="Blur radius")
+blur_scale.set(0)
+blur_scale.pack(pady=20, padx=10, fill="x")
+
+#scale for contrast
+contrast_scale = Scale(right_frame, from_=0, to=5.0, resolution=0.1, orient=HORIZONTAL, label="Contrast factor")
+contrast_scale.set(0)
+contrast_scale.pack(pady=20, padx=10, fill="x")
+
 # function to load image through menubar->file->open...
 def image_open():
     global current_image, tk_image
@@ -99,13 +113,13 @@ def new_file():
     canvas.delete("all")
 
 def undo_move():
-    None
+    pass
 
 def stepf():
-    None
+    pass
 
 def stepb():
-    None
+    pass
 
 #allows to select colour
 colour = 'black'
@@ -125,16 +139,36 @@ def deselect_tool():
 def select_brush():
     global current_tool, active_button
     deselect_tool()
-    current_tool = DrawTools(canvas, colour)
-    canvas.bind('<B1-Motion>', current_tool.draw_line)
+    current_tool = BrushTool(canvas, colour)
+    canvas.bind('<B1-Motion>', current_tool.use_tool)
     active_button = '<B1-Motion>'
 
 def select_oval():
     global current_tool, active_button
     deselect_tool()
-    current_tool = DrawTools(canvas, colour)
-    canvas.bind('<Button-1>', current_tool.draw_oval)
+    current_tool = OvalTool(canvas, colour)
+    canvas.bind('<Button-1>', current_tool.use_tool)
     active_button = '<Button-1>'
+
+def apply_blur():
+    global current_image, tk_image
+    if current_image:
+        radius = blur_scale.get()
+        blur_tool = BlurTool(current_image, radius)
+        current_image = blur_tool.use_tool()
+        tk_image = ImageTk.PhotoImage(current_image)
+        canvas.delete("all")
+        canvas.create_image(0, 0, anchor=NW, image=tk_image)
+
+def apply_contrast():
+    global current_image, tk_image
+    if current_image:
+        factor = contrast_scale.get()
+        contrast_tool = ContrastTool(current_image, factor)
+        current_image = contrast_tool.use_tool()
+        tk_image = ImageTk.PhotoImage(current_image)
+        canvas.delete("all")
+        canvas.create_image(0, 0, anchor=NW, image=tk_image)
 
 # create menu bar
 menubar = Menu(window)
@@ -167,8 +201,9 @@ rightClick.add_command(label='Paste')
 # add popup menu when right-clicked
 def right_popup(event):
     rightClick.tk_popup(event.x_root, event.y_root)
-
-tool_line.config(command=select_oval)
+tool_blur.config(command=apply_blur)
+tool_contrast.config(command=apply_contrast)
+tool_oval.config(command=select_oval)
 tool_brush.config(command=select_brush)
 window.bind('<Button-3>',right_popup)
 
