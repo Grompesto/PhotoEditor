@@ -1,13 +1,13 @@
 from tkinter import *
 from tkinter import filedialog
 from PIL import ImageTk, Image
-from editor.tools import DrawTools, OvalTool, BrushTool, PillowTools, BlurTool, ContrastTool
+from editor.tools import DrawTools, OvalTool, BrushTool, PillowTools, BlurTool, ContrastTool, MoveTool
 from tkinter import Scale, HORIZONTAL
 
 #create main window
 window = Tk()
 window.title("PRB (Photoshop's retarded brother)")
-window.geometry('1280x720')
+window.geometry('1920x1080')
 window.resizable(width=True,height=True)
 icon = PhotoImage(file ='C:/Users/zlaya/PycharmProjects/PythonProject/assets/Retarded brother.png')
 window.iconphoto(True,icon)
@@ -30,8 +30,8 @@ tool_oval = Button(tool_bar,text='Oval')
 tool_oval.pack()
 tool_selection = Button(tool_bar,text='Selection')
 tool_selection.pack()
-tool_lupa = Button(tool_bar,text='Lupa')
-tool_lupa.pack()
+tool_zoom = Button(tool_bar,text='Zoom')
+tool_zoom.pack()
 tool_slice = Button(tool_bar,text='Slice')
 tool_slice.pack()
 tool_brush = Button(tool_bar,text='Brush')
@@ -42,8 +42,6 @@ tool_erasor = Button(tool_bar,text='Erasor')
 tool_erasor.pack()
 tool_marquee = Button(tool_bar,text='Marquee')
 tool_marquee.pack()
-tool_gradient = Button(tool_bar,text='Gradient')
-tool_gradient.pack()
 tool_contrast = Button(tool_bar,text='Contrast')
 tool_contrast.pack()
 tool_blur = Button(tool_bar,text='Blur')
@@ -77,6 +75,8 @@ canvas = Canvas(window, width=1280, height=720, bg = 'lightgray')
 canvas.grid(row=0,column=1)
 current_image = None
 tk_image = None
+image_id = None
+image_pos = [0, 0]
 
 #lists for history of changes of image
 history = []
@@ -98,13 +98,14 @@ contrast_scale.pack(pady=20, padx=10, fill="x")
 
 # function to load image through menubar->file->open...
 def image_open():
-    global current_image, tk_image
+    global current_image, tk_image, image_id, image_pos
     fileTypes = [('Image Files','*.png;*.jpg;*.jpeg')]
     path = filedialog.askopenfilename(filetypes=fileTypes)
     current_image = Image.open(path).resize((500,500))
     tk_image = ImageTk.PhotoImage(current_image)
     canvas.delete("all")
-    canvas.create_image(0, 0, anchor=NW, image=tk_image)
+    image_pos = [0, 0]
+    image_id = canvas.create_image(image_pos[0], image_pos[1], anchor=NW, image=tk_image)
 
 # function to save image through menubar->file->save as...
 def image_save_as():
@@ -121,23 +122,23 @@ def undo_move():
 
 #function to make step forward
 def stepf():
-    global current_image, tk_image, history, redo_history
+    global current_image, tk_image, history, redo_history, image_id, image_pos
     if redo_history:
         history.append(current_image.copy())
         current_image = redo_history.pop()
         tk_image = ImageTk.PhotoImage(current_image)
-        canvas.delete("all")
-        canvas.create_image(0, 0, anchor=NW, image=tk_image)
+        canvas.delete(image_id)
+        image_id = canvas.create_image(image_pos[0], image_pos[1], anchor=NW, image=tk_image)
 
 #function to make step backward
 def stepb():
-    global current_image, tk_image, history, redo_history
+    global current_image, tk_image, history, redo_history, image_id, image_pos
     if history:
         redo_history.append(current_image.copy())
         current_image = history.pop()
         tk_image = ImageTk.PhotoImage(current_image)
-        canvas.delete("all")
-        canvas.create_image(0, 0, anchor=NW, image=tk_image)
+        canvas.delete(image_id)
+        image_id = canvas.create_image(image_pos[0], image_pos[1], anchor=NW, image=tk_image)
 
 #allows to select colour
 colour = 'black'
@@ -156,6 +157,7 @@ def deselect_tool():
     canvas.unbind(active_button)
     active_button = None
 
+#function for brush tool
 def select_brush():
     global current_tool, active_button
     deselect_tool()
@@ -163,6 +165,7 @@ def select_brush():
     canvas.bind('<B1-Motion>', current_tool.use_tool)
     active_button = '<B1-Motion>'
 
+#function for oval tool
 def select_oval():
     global current_tool, active_button
     deselect_tool()
@@ -170,8 +173,18 @@ def select_oval():
     canvas.bind('<Button-1>', current_tool.use_tool)
     active_button = '<Button-1>'
 
+#function for move tool
+def select_move():
+    global current_tool, active_button,image_id, image_pos
+    deselect_tool()
+    current_tool = MoveTool(canvas, image_id, image_pos)
+    canvas.bind('<Button-1>', current_tool.start_move)
+    canvas.bind('<B1-Motion>', current_tool.move_image)
+    active_button = '<B1-Motion>'
+
+#function for blur tool
 def apply_blur():
-    global current_image, tk_image, history, redo_history
+    global current_image, tk_image, history, redo_history, image_id, image_pos
     if current_image:
         history.append(current_image.copy())
         redo_history.clear()
@@ -179,11 +192,12 @@ def apply_blur():
         blur_tool = BlurTool(current_image, radius)
         current_image = blur_tool.use_tool()
         tk_image = ImageTk.PhotoImage(current_image)
-        canvas.delete("all")
-        canvas.create_image(0, 0, anchor=NW, image=tk_image)
+        canvas.delete(image_id)
+        image_id = canvas.create_image(image_pos[0], image_pos[1], anchor=NW, image=tk_image)
 
+#function for contrast tool
 def apply_contrast():
-    global current_image, tk_image, history, redo_history
+    global current_image, tk_image, history, redo_history, image_id, image_pos
     if current_image:
         history.append(current_image.copy())
         redo_history.clear()
@@ -191,8 +205,8 @@ def apply_contrast():
         contrast_tool = ContrastTool(current_image, factor)
         current_image = contrast_tool.use_tool()
         tk_image = ImageTk.PhotoImage(current_image)
-        canvas.delete("all")
-        canvas.create_image(0, 0, anchor=NW, image=tk_image)
+        canvas.delete(image_id)
+        image_id = canvas.create_image(image_pos[0], image_pos[1], anchor=NW, image=tk_image)
 
 # create menu bar
 menubar = Menu(window)
@@ -230,6 +244,7 @@ tool_blur.config(command=apply_blur)
 tool_contrast.config(command=apply_contrast)
 tool_oval.config(command=select_oval)
 tool_brush.config(command=select_brush)
+tool_move.config(command=select_move)
 window.bind('<Button-3>',right_popup)
 
 window.config(menu = menubar)
