@@ -1,7 +1,7 @@
 from tkinter import *
 from tkinter import filedialog
 from PIL import ImageTk, Image
-from editor.tools import DrawTools, OvalTool, BrushTool, PillowTools, BlurTool, ContrastTool, MoveTool
+from editor.tools import DrawTools, OvalTool, BrushTool, PillowTools, BlurTool, ContrastTool, MoveTool, RotateTool
 from tkinter import Scale, HORIZONTAL
 
 #create main window
@@ -85,6 +85,11 @@ redo_history = []
 #create frame for scale grid
 right_frame = Frame(window, bg="darkgray", borderwidth=10)
 right_frame.grid(row=0, column=2, rowspan=2, sticky="ns")
+
+#scale for rotate
+rotate_scale = Scale(right_frame, from_=-180, to=180, orient=HORIZONTAL, label="Rotate angle")
+rotate_scale.set(0)
+rotate_scale.pack(pady=20, padx=10, fill="x")
 
 #scale for blur
 blur_scale = Scale(right_frame, from_=0, to=20, orient=HORIZONTAL, label="Blur radius")
@@ -182,6 +187,19 @@ def select_move():
     canvas.bind('<B1-Motion>', current_tool.move_image)
     active_button = '<B1-Motion>'
 
+#function for rotate tool
+def apply_rotate():
+    global current_image, tk_image, history, redo_history, image_id, image_pos
+    if current_image:
+        history.append(current_image.copy())
+        redo_history.clear()
+        angle = rotate_scale.get()
+        rotate_tool = RotateTool(current_image, angle)
+        current_image = rotate_tool.use_tool()
+        tk_image = ImageTk.PhotoImage(current_image)
+        canvas.delete(image_id)
+        image_id = canvas.create_image(image_pos[0], image_pos[1], anchor=NW, image=tk_image)
+
 #function for blur tool
 def apply_blur():
     global current_image, tk_image, history, redo_history, image_id, image_pos
@@ -245,6 +263,8 @@ tool_contrast.config(command=apply_contrast)
 tool_oval.config(command=select_oval)
 tool_brush.config(command=select_brush)
 tool_move.config(command=select_move)
+tool_rotate.config(command=apply_rotate)
+
 window.bind('<Button-3>',right_popup)
 
 window.config(menu = menubar)

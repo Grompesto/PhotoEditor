@@ -65,3 +65,12 @@ class MoveTool:
         self.start_y = event.y
         self.image_pos[0] += dx
         self.image_pos[1] += dy
+
+#create rotate tool
+class RotateTool:
+    def __init__(self, image, angle):
+        self.image = image
+        self.angle = angle
+
+    def use_tool(self):
+        return self.image.rotate(self.angle, expand=True, fillcolor=('lightgray'))
