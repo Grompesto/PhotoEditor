@@ -24,28 +24,18 @@ tool_text = Button(tool_bar,text='Text')
 tool_text.pack()
 tool_oval = Button(tool_bar,text='Oval')
 tool_oval.pack()
-tool_selection = Button(tool_bar,text='Selection')
-tool_selection.pack()
-tool_zoom = Button(tool_bar,text='Zoom')
-tool_zoom.pack()
-tool_slice = Button(tool_bar,text='Slice')
-tool_slice.pack()
 tool_brush = Button(tool_bar,text='Brush')
 tool_brush.pack()
 tool_move = Button(tool_bar,text='Move')
 tool_move.pack()
 tool_erasor = Button(tool_bar,text='Erasor')
 tool_erasor.pack()
-tool_marquee = Button(tool_bar,text='Marquee')
-tool_marquee.pack()
 tool_contrast = Button(tool_bar,text='Contrast')
 tool_contrast.pack()
 tool_blur = Button(tool_bar,text='Blur')
 tool_blur.pack()
 tool_rotate = Button(tool_bar,text='Rotate')
 tool_rotate.pack()
-tool_hand = Button(tool_bar,text='Hand')
-tool_hand.pack()
 
 #create color palette frame
 colorpalette_bar = Frame(left_frame,bg='gray',borderwidth=10)
@@ -88,26 +78,26 @@ rotate_scale.set(0)
 rotate_scale.pack(pady=20, padx=10, fill="x")
 
 #scale for blur
-blur_scale = Scale(right_frame, from_=0, to=20, orient=HORIZONTAL, label="Blur radius")
+blur_scale = Scale(right_frame, from_=1, to=20, orient=HORIZONTAL, label="Blur radius")
 blur_scale.set(0)
 blur_scale.pack(pady=20, padx=10, fill="x")
 
 #scale for contrast
-contrast_scale = Scale(right_frame, from_=0, to=5.0, resolution=0.1, orient=HORIZONTAL, label="Contrast factor")
+contrast_scale = Scale(right_frame, from_=0.1, to=5.0, resolution=0.1, orient=HORIZONTAL, label="Contrast factor")
 contrast_scale.set(0)
 contrast_scale.pack(pady=20, padx=10, fill="x")
 
-# scale for text size
-text_size_scale = Scale(right_frame, from_=10, to=100, orient=HORIZONTAL, label="Text size")
-text_size_scale.set(24)
-text_size_scale.pack(pady=20, padx=10, fill="x")
+# scale for tools size
+tool_size_scale = Scale(right_frame, from_=1, to=100, orient=HORIZONTAL, label="Tool size", command=lambda val: select_size(int(val)))
+tool_size_scale.set(24)
+tool_size_scale.pack(pady=20, padx=10, fill="x")
 
 # function to load image through menubar->file->open...
 def image_open():
     global current_image, tk_image, image_id, image_pos
     fileTypes = [('Image Files','*.png;*.jpg;*.jpeg')]
     path = filedialog.askopenfilename(filetypes=fileTypes)
-    current_image = Image.open(path).resize((500,500))
+    current_image = Image.open(path).resize((700,700))
     tk_image = ImageTk.PhotoImage(current_image)
     canvas.delete("all")
     image_pos = [0, 0]
@@ -160,6 +150,13 @@ def select_colour(new_colour):
     colour = new_colour
     current_tool.set_colour(colour)
 
+#allows to select size for draw tools
+size = 1
+def select_size(new_size):
+    global size
+    size = new_size
+    current_tool.set_size(size)
+
 #allows to select tools
 current_tool = None
 active_button = None
@@ -174,7 +171,7 @@ def deselect_tool():
 def select_brush():
     global current_tool, active_button
     deselect_tool()
-    current_tool = BrushTool(canvas, colour)
+    current_tool = BrushTool(canvas, current_image, image_pos, update_image, colour, size)
     canvas.bind('<B1-Motion>', current_tool.use_tool)
     active_button = '<B1-Motion>'
 
@@ -182,7 +179,7 @@ def select_brush():
 def select_oval():
     global current_tool, active_button
     deselect_tool()
-    current_tool = OvalTool(canvas, colour)
+    current_tool = OvalTool(canvas, current_image, image_pos, update_image, colour, size)
     canvas.bind('<Button-1>', current_tool.use_tool)
     active_button = '<Button-1>'
 
@@ -238,7 +235,7 @@ def select_contrast():
 def select_text():
     global current_tool, active_button
     deselect_tool()
-    font_size = text_size_scale.get()
+    font_size = tool_size_scale.get()
     current_tool = TextTool(canvas, current_image, image_pos, update_image, colour, font_size=font_size)
     canvas.bind('<Button-1>', current_tool.use_tool)
     active_button = '<Button-1>'
