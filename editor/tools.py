@@ -1,4 +1,5 @@
-from PIL import ImageFilter, ImageEnhance
+from PIL import ImageFilter, ImageEnhance, ImageDraw, ImageFont
+from tkinter.simpledialog import askstring
 
 #create draw on canvas tools
 class DrawTools:
@@ -74,3 +75,26 @@ class RotateTool:
 
     def use_tool(self):
         return self.image.rotate(self.angle, expand=True, fillcolor=('lightgray'))
+
+#create text tool
+class TextTool:
+    def __init__(self, canvas, image_ref, image_pos, update_image_callback, colour='black', font_path=None, font_size=24):
+        self.canvas = canvas
+        self.image_ref = image_ref
+        self.image_pos = image_pos
+        self.update_image_callback = update_image_callback
+        self.colour = colour
+        self.font_size = font_size
+        self.font_path = font_path or "arial.ttf"
+
+    def set_colour(self, new_colour):
+        self.colour = new_colour
+
+    def use_tool(self, event):
+        text = askstring("Input text", "Input text on the image:")
+        draw = ImageDraw.Draw(self.image_ref)
+        font = ImageFont.truetype(self.font_path, self.font_size)
+        x = event.x - self.image_pos[0]
+        y = event.y - self.image_pos[1]
+        draw.text((x, y), text, font=font, fill=self.colour)
+        self.update_image_callback()

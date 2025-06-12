@@ -1,7 +1,7 @@
 from tkinter import *
 from tkinter import filedialog
 from PIL import ImageTk, Image
-from editor.tools import DrawTools, OvalTool, BrushTool, PillowTools, BlurTool, ContrastTool, MoveTool, RotateTool
+from editor.tools import DrawTools, OvalTool, BrushTool, PillowTools, BlurTool, ContrastTool, MoveTool, RotateTool, TextTool
 from tkinter import Scale, HORIZONTAL
 
 #create main window
@@ -11,10 +11,6 @@ window.geometry('1920x1080')
 window.resizable(width=True,height=True)
 icon = PhotoImage(file ='C:/Users/zlaya/PycharmProjects/PythonProject/assets/Retarded brother.png')
 window.iconphoto(True,icon)
-
-# icon for text tool
-imagetext = Image.open("C:/Users/zlaya/PycharmProjects/PythonProject/assets/free-icon-text-2266755.png").resize((25,25))
-image_text = ImageTk.PhotoImage(imagetext)
 
 #create main left frame for smaller frames
 left_frame = Frame(window, bg="darkgray")
@@ -101,6 +97,11 @@ contrast_scale = Scale(right_frame, from_=0, to=5.0, resolution=0.1, orient=HORI
 contrast_scale.set(0)
 contrast_scale.pack(pady=20, padx=10, fill="x")
 
+# scale for text size
+text_size_scale = Scale(right_frame, from_=10, to=100, orient=HORIZONTAL, label="Text size")
+text_size_scale.set(24)
+text_size_scale.pack(pady=20, padx=10, fill="x")
+
 # function to load image through menubar->file->open...
 def image_open():
     global current_image, tk_image, image_id, image_pos
@@ -117,6 +118,13 @@ def image_save_as():
     fileTypes = [('Image Files', '*.png;*.jpg;*.jpeg')]
     path = filedialog.asksaveasfilename(filetypes=fileTypes)
     current_image.save(path)
+
+#function to update image after operations
+def update_image():
+    global tk_image, image_id
+    tk_image = ImageTk.PhotoImage(current_image)
+    canvas.delete(image_id)
+    image_id = canvas.create_image(image_pos[0], image_pos[1], anchor=NW, image=tk_image)
 
 # function for blank file through menubar->file->new file
 def new_file():
@@ -188,7 +196,7 @@ def select_move():
     active_button = '<B1-Motion>'
 
 #function for rotate tool
-def apply_rotate():
+def select_rotate():
     global current_image, tk_image, history, redo_history, image_id, image_pos
     if current_image:
         history.append(current_image.copy())
@@ -201,7 +209,7 @@ def apply_rotate():
         image_id = canvas.create_image(image_pos[0], image_pos[1], anchor=NW, image=tk_image)
 
 #function for blur tool
-def apply_blur():
+def select_blur():
     global current_image, tk_image, history, redo_history, image_id, image_pos
     if current_image:
         history.append(current_image.copy())
@@ -214,7 +222,7 @@ def apply_blur():
         image_id = canvas.create_image(image_pos[0], image_pos[1], anchor=NW, image=tk_image)
 
 #function for contrast tool
-def apply_contrast():
+def select_contrast():
     global current_image, tk_image, history, redo_history, image_id, image_pos
     if current_image:
         history.append(current_image.copy())
@@ -225,6 +233,15 @@ def apply_contrast():
         tk_image = ImageTk.PhotoImage(current_image)
         canvas.delete(image_id)
         image_id = canvas.create_image(image_pos[0], image_pos[1], anchor=NW, image=tk_image)
+
+#function for text tool
+def select_text():
+    global current_tool, active_button
+    deselect_tool()
+    font_size = text_size_scale.get()
+    current_tool = TextTool(canvas, current_image, image_pos, update_image, colour, font_size=font_size)
+    canvas.bind('<Button-1>', current_tool.use_tool)
+    active_button = '<Button-1>'
 
 # create menu bar
 menubar = Menu(window)
@@ -258,12 +275,13 @@ rightClick.add_command(label='Paste')
 def right_popup(event):
     rightClick.tk_popup(event.x_root, event.y_root)
 
-tool_blur.config(command=apply_blur)
-tool_contrast.config(command=apply_contrast)
+tool_blur.config(command=select_blur)
+tool_contrast.config(command=select_contrast)
 tool_oval.config(command=select_oval)
 tool_brush.config(command=select_brush)
 tool_move.config(command=select_move)
-tool_rotate.config(command=apply_rotate)
+tool_rotate.config(command=select_rotate)
+tool_text.config(command=select_text)
 
 window.bind('<Button-3>',right_popup)
 
