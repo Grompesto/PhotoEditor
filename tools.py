@@ -26,6 +26,7 @@ class TextTool(DrawTools):
     def __init__(self, canvas, image_ref, image_pos, update_image_callback, colour='black', font_path=None, font_size=24):
         super().__init__(canvas, image_ref, image_pos, update_image_callback, colour, font_size)
         self.font_path = font_path or "arial.ttf"
+        self.font_size = font_size
 
     def set_colour(self, new_colour):
         self.colour = new_colour

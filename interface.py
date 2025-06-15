@@ -1,14 +1,14 @@
 from tkinter import *
 from tkinter import filedialog, Scale, HORIZONTAL, messagebox
 from PIL import ImageTk, Image
-from editor.tools import OvalTool, BrushTool, BlurTool, ContrastTool, MoveTool, RotateTool, TextTool
+from tools import OvalTool, BrushTool, BlurTool, ContrastTool, MoveTool, RotateTool, TextTool
 
 #create main window
 window = Tk()
 window.title("PRB (Photoshop's retarded brother)")
 window.geometry('1920x1080')
 window.resizable(width=True,height=True)
-icon = PhotoImage(file ='C:/Users/zlaya/PycharmProjects/PythonProject/assets/Retarded brother.png')
+icon = PhotoImage(file ='/assets/Retarded brother.png')
 window.iconphoto(True,icon)
 
 #create main left frame for smaller frames
